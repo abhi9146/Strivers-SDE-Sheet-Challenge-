@@ -2,63 +2,29 @@
 #include<bits/stdc++.h>
 using namespace std;
 
-
-vector<string> ans;//Store all valid sentences
-    struct trienode{
-        char c;
-        int we;
-        trienode *child[26];
-        trienode(char c){
-            we = 0;
-            this->c = c;
-            for(int i=0;i<26;++i)
-                child[i]=NULL;
-        }
-    };
-    trienode *root;//root of TRIE
-    void insertInTrie(const string &word){
-        trienode *curr = root;
-        int idx;
-        for(int i=0;i<word.size();++i){
-            idx = word[i]-'a';
-            if(!curr->child[idx])
-                curr->child[idx] = new trienode(char(97+idx));
-            curr = curr->child[idx];
-        }
-        curr->we += 1;
-    }
-    bool searchInTrie(string s){
-        trienode *curr = root;
-        int idx;
-        for(int i=0;i<s.size();++i){
-            idx = s[i]-'a';
-            if(!curr->child[idx])
-                return false;
-            curr = curr->child[idx];
-        }
-        return curr->we>0;
-    }
-    
-    void solve(const string &s,string st,int pos){
-        if(pos==s.size()){
-            ans.push_back(st);
-            return;
-        }
-        st += " ";
-        for(int i=pos;i<s.size();++i){
-            if(searchInTrie(s.substr(pos,i+1-pos)))
-                solve(s,st+s.substr(pos,i+1-pos),i+1);
-        }
+void f(int in, string ds, map<string, int> &m, string &s, vector<string> &ans){
+    if(in == s.size()){
+        ans.push_back(ds);
+        return;
     }
 
-    vector<string> wordBreak(string s, vector<string>& wordDict) {
-        root = new trienode('/');
-        for(auto word: wordDict)
-            insertInTrie(word);
-        
-        for(int i=0;i<s.size();++i){
-            if(searchInTrie(s.substr(0,i+1)))
-                solve(s,s.substr(0,i+1),i+1);
+    for(int i = in; i < s.size(); i++){
+        string tmp = s.substr(in, i - in + 1);
+        if(m[tmp] >= 1){
+            int n = ds.size();
+            ds += tmp + " ";
+            f(i + 1, ds, m, s, ans);
+            ds.erase(n);
         }
-        return ans;
     }
+}
+
+vector<string> wordBreak(string &s, vector<string> &dictionary){
+    vector<string> ans;
+    map<string, int> m;
+    for(int i = 0; i < dictionary.size(); i++ ){
+        m[dictionary[i]]++;
+    }
+    f(0, "", m, s, ans);
+    return ans;
+}
